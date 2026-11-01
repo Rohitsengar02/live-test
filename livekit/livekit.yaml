@@ -1,0 +1,19 @@
+# Self-hosted LiveKit server (Apache-2.0) — github.com/livekit/livekit
+port: 7880
+bind_addresses: ["0.0.0.0"]
+rtc:
+  tcp_port: 7881          # ICE/TCP fallback (strict networks)
+  udp_port: 7882          # single UDP port for all media (easy firewalling)
+  use_external_ip: false  # LAN testing; node IP is passed with --node-ip
+# API keys come from the LIVEKIT_KEYS env var (set in docker-compose from .env)
+room:
+  auto_create: true
+  empty_timeout: 120
+  departure_timeout: 20
+  enabled_codecs:
+    - mime: audio/opus
+    - mime: video/vp8
+    - mime: video/h264
+    - mime: video/vp9
+logging:
+  level: info

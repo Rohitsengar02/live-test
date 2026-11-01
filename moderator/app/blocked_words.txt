@@ -1,0 +1,61 @@
+# One word or phrase per line. Matching is case-insensitive and tolerant of
+# repeated letters (fuuuck), separators (f.u.c.k) and leetspeak (sh1t).
+# Edit freely — restart the moderator service to reload.
+
+# English
+fuck
+fucker
+motherfucker
+shit
+bitch
+bastard
+asshole
+dick
+pussy
+cunt
+slut
+whore
+nigger
+nigga
+faggot
+retard
+
+# Hindi / Hinglish (romanised)
+madarchod
+mc
+bhenchod
+behenchod
+bc
+chutiya
+chutiye
+chut
+lauda
+lavda
+lund
+gandu
+gaand
+randi
+harami
+kamina
+kutti
+kutta
+bhosdi
+bhosdike
+bhosda
+jhaatu
+tatte
+saala kutta
+
+# Hindi (Devanagari)
+मादरचोद
+बहनचोद
+भेनचोद
+चूतिया
+चूत
+लौड़ा
+लंड
+गांडू
+गांड
+रंडी
+हरामी
+भोसड़ी

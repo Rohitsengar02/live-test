@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: streamguard-web
+    env: node
+    rootDir: web
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: LIVEKIT_URL
+        sync: false
+      - key: LIVEKIT_PUBLIC_URL
+        sync: false
+      - key: LIVEKIT_API_KEY
+        sync: false
+      - key: LIVEKIT_API_SECRET
+        sync: false
+      - key: MOD_PASSWORD
+        value: admin123
+      - key: CHAT_POLICY
+        value: mask
+

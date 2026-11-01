@@ -1,0 +1,12 @@
+fastapi==0.115.*
+uvicorn[standard]==0.32.*
+python-multipart>=0.0.12
+nudenet==3.4.2
+onnxruntime>=1.19
+tokenizers>=0.20
+huggingface_hub>=0.25
+numpy>=1.26
+opencv-python-headless>=4.10
+livekit>=1.0
+livekit-api>=1.0
+redis>=5.0

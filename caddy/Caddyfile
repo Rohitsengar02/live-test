@@ -1,0 +1,21 @@
+{
+	# self-signed local CA — accept the browser warning once per device
+	local_certs
+	skip_install_trust
+	default_sni {$LAN_IP}
+}
+
+https://{$LAN_IP}, https://localhost {
+	tls internal
+
+	# LiveKit signalling (websocket) on the same origin → no mixed-content issues
+	@rtc path /rtc /rtc/*
+	reverse_proxy @rtc livekit:7880
+
+	# Everything else → Next.js (SSE is flushed automatically)
+	reverse_proxy web:3000
+}
+
+http:// {
+	redir https://{host}{uri} permanent
+}

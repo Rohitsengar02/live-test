@@ -1,0 +1,72 @@
+name: streamguard
+
+services:
+  # Real-time media server (Apache-2.0) — github.com/livekit/livekit
+  livekit:
+    image: livekit/livekit-server:v1.13.11
+    command: --config /etc/livekit.yaml --node-ip ${LAN_IP}
+    environment:
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
+    volumes:
+      - ./livekit/livekit.yaml:/etc/livekit.yaml:ro
+    ports:
+      - "7880:7880"        # API + signalling (also proxied by Caddy at /rtc)
+      - "7881:7881"        # ICE over TCP (fallback)
+      - "7882:7882/udp"    # media over UDP
+    restart: unless-stopped
+
+  # Cache + pub/sub (BSD-3, open-source Redis fork) — github.com/valkey-io/valkey
+  valkey:
+    image: valkey/valkey:8-alpine
+    command: valkey-server --save "" --appendonly no --maxmemory 256mb --maxmemory-policy volatile-lru
+    restart: unless-stopped
+
+  # AI moderation: NudeNet (MIT) + toxic-bert (Apache-2.0) + AutoMod bot
+  moderator:
+    build: ./moderator
+    environment:
+      LIVEKIT_URL: ${LIVEKIT_URL:-ws://livekit:7880}
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
+      REDIS_URL: redis://valkey:6379
+      TEXT_TOXIC_THRESHOLD: ${TEXT_TOXIC_THRESHOLD:-0.70}
+      NSFW_MIN_SCORE: ${NSFW_MIN_SCORE:-0.45}
+      NSFW_SAMPLE_SECONDS: ${NSFW_SAMPLE_SECONDS:-1.0}
+      NSFW_HITS_TO_MUTE: ${NSFW_HITS_TO_MUTE:-2}
+      NSFW_KICK_AFTER_STRIKES: ${NSFW_KICK_AFTER_STRIKES:-3}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on: [valkey]
+    restart: unless-stopped
+
+  # Next.js app
+  web:
+    build: ./web
+    environment:
+      LIVEKIT_URL: ${LIVEKIT_URL:-http://livekit:7880}
+      LIVEKIT_PUBLIC_URL: ${LIVEKIT_PUBLIC_URL:-${LIVEKIT_URL:-}}
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
+      REDIS_URL: redis://valkey:6379
+      MODERATOR_URL: http://moderator:8000
+      MOD_PASSWORD: ${MOD_PASSWORD}
+      CHAT_POLICY: ${CHAT_POLICY:-mask}
+    depends_on: [valkey, moderator]
+    restart: unless-stopped
+
+  # HTTPS for LAN devices (cameras need a secure origin) — github.com/caddyserver/caddy
+  caddy:
+    image: caddy:2-alpine
+    environment:
+      LAN_IP: ${LAN_IP}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    ports:
+      - "443:443"
+      - "80:80"
+    depends_on: [web]
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
